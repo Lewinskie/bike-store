@@ -21,10 +21,12 @@ app.use(
 );
 
 //ROUTES
-
+app.use("/api", require("./routes/userRouter"));
 
 //PORT
-
+const PORT = process.env.PORT;
 
 //APP LISTENER
-
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
+});
