@@ -42,13 +42,42 @@ const register = async (req, res) => {
       path: "/user/access_token",
     });
 
-    return res.status(201).json({msg:'User created successfully'})
+    return res.status(201).json({ msg: "User created successfully" });
   } catch (error) {
     return res.status(500).json({ msg: error.message });
   }
 };
 
 //LOGIN USER
+const login = async (req, res) => {
+  try {
+    //FIRST CHECK IF USER EXISTS
+    const { email, password } = req.body;
+    const user = await User.findOne({ email });
+    if (!user)
+      return res
+        .status(400)
+        .json({ msg: "User does not exist! Please register" });
+
+    //COMPARE IF PASSWORDS MATCH
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) return res.status(400).json({ msg: "Wrong password" });
+
+    //IF LOGIN SUCCESS, CREATE ACCESS TOKEN
+    const accesstoken = createAccessToken({ id: user._id });
+
+    //SET COOKIES TO THE HEADERS
+    res.cookie("accesstoken", accesstoken, {
+      httpOnly: true,
+      path: "/user/access_token",
+    });
+
+    //RETURN SUCCESS MESSAGE
+    return res.status(200).json({ msg: "User Logged in successfully" });
+  } catch (error) {
+    return res.status(500).json({ msg: error.message });
+  }
+};
 
 //createAccessToken FUNCTION
 const createAccessToken = (user) => {
@@ -56,3 +85,4 @@ const createAccessToken = (user) => {
 };
 
 exports.register = register;
+exports.login = login;
