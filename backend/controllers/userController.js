@@ -83,6 +83,20 @@ const login = async (req, res) => {
   }
 };
 
+// LOG OUT FUNCTION
+const logout = async (req, res) => {
+  try {
+    // CLEAR COOKIES
+    res.clearCookie("accesstoken", { path: "/user/token" });
+
+    //RETURN SUCCESS MESSAGE
+    return res.status(200).json({ msg: "User Logout success" });
+  } catch (error) {
+    return res.status(500).json({ msg: error.message });
+  }
+};
+
+// CREATING ACCESS TOKEN LOGIC
 const createAccessToken = (user) => {
   return jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, { expiresIn: "1d" });
 };
@@ -113,6 +127,35 @@ const accessToken = (req, res) => {
   }
 };
 
+const getUser = async (req, res) => {
+  try {
+    //FIND USER BY ID
+    const user = await User.findById(req.user.id).select("-password");
+
+    if (!user) return res.status(400).json({ msg: "User not found!" });
+
+    return res.status(200).json({ user: user });
+  } catch (error) {
+    return res.status(500).json({ msg: error.message });
+  }
+};
+
+//GET ALL USERS INFORMATION
+const getAllUsers = async (req, res) => {
+  try {
+    //FIND ALL USERS
+    const users = await User.find();
+    if (!users) return res.status(400).json({ msg: "No users found" });
+
+    return res.status(200).json({ msg: "Success!", users: users });
+  } catch (error) {
+    return res.status(500).json({ msg: error.message });
+  }
+};
+
 exports.accessToken = accessToken;
 exports.register = register;
 exports.login = login;
+exports.logout = logout;
+exports.getUser = getUser;
+exports.getAllUsers = getAllUsers;
