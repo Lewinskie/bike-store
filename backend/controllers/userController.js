@@ -34,15 +34,15 @@ const register = async (req, res) => {
 
     //CREATE ACCESS TOKEN FOR THE USER
     const accesstoken = createAccessToken({ id: newUser._id });
-    // res.json(accesstoken);
 
-    //CREATE COOKIE THAT WILL WILL BE SENT VIA THE HEADERS
+    //CREATE COOKIE
     res.cookie("accesstoken", accesstoken, {
       httpOnly: true,
-      path: "/user/access_token",
+      path: "/user/token",
     });
-
-    return res.status(201).json({ msg: "User created successfully" });
+    return res
+      .status(201)
+      .json({ msg: "User created successfully", accesstoken });
   } catch (error) {
     return res.status(500).json({ msg: error.message });
   }
@@ -51,38 +51,68 @@ const register = async (req, res) => {
 //LOGIN USER
 const login = async (req, res) => {
   try {
-    //FIRST CHECK IF USER EXISTS
+    //CHECK IF USER EXISTS
     const { email, password } = req.body;
     const user = await User.findOne({ email });
+
     if (!user)
       return res
         .status(400)
-        .json({ msg: "User does not exist! Please register" });
+        .json({ msg: "User does not exist, please Register" });
+    //CHECK IF PASSWORDS MATCH
+    const match = await bcrypt.compare(password, user.password);
 
-    //COMPARE IF PASSWORDS MATCH
-    const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) return res.status(400).json({ msg: "Wrong password" });
+    if (!match) return res.status(400).json({ msg: "Wrong password" });
 
-    //IF LOGIN SUCCESS, CREATE ACCESS TOKEN
+    //IF SUCCESS, CREATE ACCESS TOKEN
     const accesstoken = createAccessToken({ id: user._id });
 
-    //SET COOKIES TO THE HEADERS
+    //SET COOKIES
     res.cookie("accesstoken", accesstoken, {
       httpOnly: true,
-      path: "/user/access_token",
+      path: "/user/token",
     });
 
-    //RETURN SUCCESS MESSAGE
-    return res.status(200).json({ msg: "User Logged in successfully" });
+    // RETURN WITH USER AND ACCESSTOKEN AND SUCCESS MSG
+
+    return res
+      .status(200)
+      .json({ msg: "Login success!", user: user, accesstoken: accesstoken });
+  } catch (error) {
+    return res.status(400).json({ msg: error.message });
+  }
+};
+
+const createAccessToken = (user) => {
+  return jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, { expiresIn: "1d" });
+};
+
+// ACCESS TOKEN FUNCTION
+const accessToken = (req, res) => {
+  try {
+    const token = req.cookies.accesstoken;
+
+    // CHECK IF TOKEN IS EXPIRED OR NOT
+    if (!token)
+      return res
+        .status(400)
+        .json({ msg: "Invalid Token, please login or Register" });
+
+    //VERIFY TOKEN
+    jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, user) => {
+      if (err)
+        return res
+          .status(400)
+          .json({ msg: "Invalid token, please Login or Register" });
+
+      //RETURN USER AND TOKEN
+      res.json({ user, token });
+    });
   } catch (error) {
     return res.status(500).json({ msg: error.message });
   }
 };
 
-//createAccessToken FUNCTION
-const createAccessToken = (user) => {
-  return jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, { expiresIn: "1d" });
-};
-
+exports.accessToken = accessToken;
 exports.register = register;
 exports.login = login;
