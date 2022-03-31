@@ -1,0 +1,21 @@
+.slide {
+  opacity: 0;
+  transition-duration: 1s ease;
+  /* position: absolute; */
+}
+.active {
+  opacity: 1;
+  transition: 1s ease-in-out;
+  transform: "scale(1.8)";
+  position: absolute;
+}
+.prev:hover {
+  transform: scale(0.9);
+  transition: 1s ease-in-out;
+  background: rgb(255, 121, 121);
+}
+.next:hover {
+  transform: scale(0.9);
+  transition: 1s ease-in-out;
+  background: rgb(255, 121, 121);
+}

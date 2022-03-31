@@ -2,22 +2,17 @@ import React, { useState } from "react";
 import { styled } from "@mui/system";
 import Back from "@mui/icons-material/ArrowBackIos";
 import Forward from "@mui/icons-material/ArrowForwardIos";
+import { SliderData } from "./sliderData";
+import "./slider.css";
 
 const SliderContainer = styled("div")({
   display: "flex",
   height: "100%",
   width: "100%",
   position: "relative",
-});
-const SliderComponent = styled("div")({
-  height: "100%",
-  width: "100%",
-  position: "absolute",
-  display: "flex",
+  justifyContent: "center",
   alignItems: "center",
-  paddingLeft: "50px",
-  bottom: "-100px",
-  // overflow: "hidden",
+  overflow: "hidden",
 });
 
 const Prev = styled("div")({
@@ -28,56 +23,54 @@ const Prev = styled("div")({
   display: "flex",
   alignItems: "center",
   justifyContent: "center",
-  // position: "absolute",
   cursor: "pointer",
+  position: "absolute",
+  top: "50%",
+  left: "30px",
+  zIndex: 1,
 });
 
 const Next = styled("div")({
-  // position: "absolute",
   height: "50px",
   width: "50px",
   background: "red",
-  // right: "20px",
   borderRadius: "50%",
   display: "flex",
   alignItems: "center",
   justifyContent: "center",
   cursor: "pointer",
+  position: "absolute",
+  top: "50%",
+  right: "30px",
+  zIndex: 1,
 });
 
 const Slider = () => {
-  const stuff = [
-    {
-      name: "one",
-      img: "/photos/img_01.png",
-    },
-    {
-      name: "two",
-      img: "/photos/repsol.png",
-    },
-    {
-      name: "three",
-      img: "/photos/yamaha.png",
-    },
-  ];
-  const [index, setIndex] = useState();
-  const handleNext = () => {
-    setIndex();
+  const [current, setCurrent] = useState(0);
+  const length = SliderData.length;
 
-    console.log(index);
+  const handleNext = () => {
+    setCurrent(current === length - 1 ? 0 : current + 1);
+    console.log(current);
+  };
+
+  const handlePrev = () => {
+    setCurrent(current === 0 ? length - 1 : current - 1);
+    console.log(current);
   };
   return (
     <SliderContainer>
-      {stuff.map((item, index) => (
-        <SliderComponent key={index}>
-          <Prev>
-            <Back style={{ color: "white" }} />
-          </Prev>
-          <img src="/photos/img_01.png" alt="" width={600} />
-          <Next onClick={() => handleNext()}>
-            <Forward style={{ color: "white" }} />
-          </Next>
-        </SliderComponent>
+      <Prev className="prev" onClick={() => handlePrev()}>
+        <Back style={{ color: "white" }} />
+      </Prev>
+      <Next className="next" onClick={() => handleNext()}>
+        <Forward style={{ color: "white" }} />
+      </Next>
+
+      {SliderData.map((slide, index) => (
+        <div key={index} className={index === current ? "active" : "slide"}>
+          <img src={slide.img} alt="" width={600} />
+        </div>
       ))}
     </SliderContainer>
   );

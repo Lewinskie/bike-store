@@ -6,7 +6,7 @@ import Slider from "../../utils/slider/Slider";
 
 const Container = styled("div")({
   background: "#141414",
-  height: "75vh",
+  height: "90vh",
 });
 
 const Left = styled("div")({
